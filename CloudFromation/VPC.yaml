@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags: 
+        - Key: Name
+          Value: my-vpc-2nd
+        - Key: Purpose
+          Value: knowledge
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-2a
+      VpcID: !Ref VPC
+      CidrBlock: 10.0.0.0/19
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: my-pub-sub-2a
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-2c
+      VpcID: !Ref VPC
+      CidrBlock: 10.0.32.0/19
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: my-pub-sub-2c
+  FrontSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-2a
+      VpcID: !Ref VPC
+      CidrBlock: 10.0.64.0/19
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: my-front-sub-2a
+  FrontSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-2a
+      VpcID: !Ref VPC
+      CidrBlock: 10.0.96.0/19
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: my-front-sub-2c
+  BackSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-2a
+      VpcID: !Ref VPC
+      CidrBlock: 10.0.128.0/19
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: my-back-sub-2a
+  BackSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-2a
+      VpcID: !Ref VPC
+      CidrBlock: 10.0.160.0/19
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: my-back-sub-2c
+  DBSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-2a
+      VpcID: !Ref VPC
+      CidrBlock: 10.0.192.0/19
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: my-db-sub-2a
+  DBSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-2a
+      VpcID: !Ref VPC
+      CidrBlock: 10.0.224.0/19
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: my-db-sub-2c
+  RouteTablePub:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: my-pub-rtb
+  RouteTableFront:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: my-front-rtb
+  RouteTableBack:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: my-back-rtb
+  RouteTableDB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: my-db-rtb
+  PubSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePub
+      SubnetId: !Ref PublicSubnetA
+  PubSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePub
+      SubnetId: !Ref PublicSubnetC
+  FrontSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTableFront
+      SubnetId: !Ref FrontSubnetA
+  FrontSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTableFront
+      SubnetId: !Ref FrontSubnetC
+  BackSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTableBack
+      SubnetId: !Ref BackSubnetA
+  BackSubentCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTableBack
+      SubnetId: !Ref BackSubnetC
+  DBSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTableDB
+      SubnetId: !Ref DBSubnetA
+  DBSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTableDB
+      SubnetId: !Ref DBSubnetC
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: my-IGW
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  InternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTablePub
