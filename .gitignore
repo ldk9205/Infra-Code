@@ -1,0 +1,6 @@
+*/.DS_Store
+.DS_Store
+*/data/
+*/.ipynb_checkpoints/
+.ipynb_checkpoints/
+for_commit_from_colab_to_github.ipynb
